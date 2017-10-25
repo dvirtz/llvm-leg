@@ -59,7 +59,6 @@ LEGInstrInfo::isLoadFromStackSlot(const MachineInstr *MI, int &FrameIndex) const
 unsigned
 LEGInstrInfo::isStoreToStackSlot(const MachineInstr *MI,
                                    int &FrameIndex) const {
-  assert(0 && "Unimplemented");
   return 0;
 }
 

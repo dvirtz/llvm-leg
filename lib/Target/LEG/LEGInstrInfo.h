@@ -22,12 +22,15 @@
 
 namespace llvm {
 
+class LEGSubtarget;
+
 class LEGInstrInfo : public LEGGenInstrInfo {
   const LEGRegisterInfo RI;
+  const LEGSubtarget& ST;
   virtual void anchor();
 
 public:
-  LEGInstrInfo();
+  LEGInstrInfo(LEGSubtarget& ST);
 
   /// getRegisterInfo - TargetInstrInfo is a superset of MRegister info.  As
   /// such, whenever a client has an instance of instruction info, it should
