@@ -32,6 +32,7 @@ multiclass BinOp<bits<4> opcode, string opstr, SDNode opnode> {
     let Inst{15-12} = dst;
     let Inst{11-4}  = 0b00000000;
     let Inst{3-0}   = src2;
+    let SchedRW = [Write_ALU_GR, Read_ALU_GR, Read_ALU_GR];
   }
   def ri : ALUInst<opcode, (outs GRRegs:$dst),
                    (ins GRRegs:$src1, i32imm:$imm),
@@ -45,6 +46,7 @@ multiclass BinOp<bits<4> opcode, string opstr, SDNode opnode> {
     let Inst{19-16} = dst;
     let Inst{15-12} = src1;
     let Inst{11-0}  = imm;
+    let SchedRW = [Write_ALU_GR, Read_ALU_GR, Read_ALU_Imm];
   }
 }
 
@@ -63,6 +65,7 @@ multiclass ShiftOp<bits<4> opcoder, bits<3> opcodei, string opstr, SDNode opnode
     let Inst{11-8}  = src2;
     let Inst{7-4}   = opcoder;
     let Inst{3-0}   = src1;
+    let SchedRW = [Write_ALU_GR, Read_ALU_GR, Read_ALU_GR];
   }
   def ri : ALUInst<0b1101, (outs GRRegs:$dst),
                    (ins GRRegs:$src1, i32imm:$imm),
@@ -78,6 +81,7 @@ multiclass ShiftOp<bits<4> opcoder, bits<3> opcodei, string opstr, SDNode opnode
     let Inst{11-7}  = imm;
     let Inst{6-4}   = opcodei;
     let Inst{3-0}   = src1;
+    let SchedRW = [Write_ALU_GR, Read_ALU_GR, Read_ALU_Imm];
   }
 }
 
@@ -106,6 +110,7 @@ def MUL  : MulInst<0b0000000, (outs GRRegs:$dst),
   let Inst{15-12} = 0b0000;
   let Inst{11-8}  = src2;
   let Inst{3-0}   = src1;
+  let SchedRW = [Write_ALU_GR, Read_ALU_GR, Read_ALU_GR];
 }
 
 def MLA  : MulInst<0b0000001, (outs GRRegs:$dst),
@@ -121,6 +126,7 @@ def MLA  : MulInst<0b0000001, (outs GRRegs:$dst),
   let Inst{15-12} = src3;
   let Inst{11-8}  = src2;
   let Inst{3-0}   = src1;
+  let SchedRW = [Write_ALU_GR, Read_ALU_GR, Read_ALU_GR, Read_ALU_GR];
 }
 
 //===----------------------------------------------------------------------===//
@@ -137,6 +143,7 @@ def MOVrr  : ALUInst<0b1101, (outs GRRegs:$dst), (ins GRRegs:$src),
   let Inst{15-12} = dst;
   let Inst{11-4}  = 0b00000000;
   let Inst{3-0} = src;
+  let SchedRW = [Write_ALU_GR, Read_ALU_GR];
 }
 
 //===----------------------------------------------------------------------===//
@@ -153,6 +160,7 @@ class MOV<bits<4> opcode, string opstr, dag ins, list<dag>pattern>
   let Inst{19-16} = imm{15-12};
   let Inst{20} = 0;
   let Inst{25} = 1;
+  let SchedRW = [Write_ALU_GR, Read_ALU_Imm];
 }
 
 def MOVLOi16 : MOV<0b1000, "movw", (ins i32imm:$imm),
@@ -182,6 +190,8 @@ def CMP : InstLEG<(outs), (ins GRRegs:$lhs, GRRegs:$rhs),
   let Inst{3-0} = rhs;
   
   let Defs = [CPSR];
+  
+  let SchedRW = [Write_ALU_CPSR, Read_ALU_GR, Read_ALU_GR];
 }
 
 //===----------------------------------------------------------------------===//
@@ -202,6 +212,8 @@ def LDR  : InstLEG<(outs GRRegs:$val), (ins memsrc:$addr),
   let Inst{19-16} = addr{15-12};
   let Inst{15-12} = val;
   let Inst{11-0} = addr{11-0};
+  
+  let SchedRW = [Write_LS_GR, Read_LS_Mem];
 }
 
 def STR : InstLEG<(outs), (ins GRRegs:$val, memsrc:$addr),
@@ -218,13 +230,15 @@ def STR : InstLEG<(outs), (ins GRRegs:$val, memsrc:$addr),
   let Inst{19-16} = addr{15-12};
   let Inst{15-12} = val;
   let Inst{11-0} = addr{11-0};
+
+  let SchedRW = [Write_LS_Mem, Read_LS_GR];
 }
 
 //===----------------------------------------------------------------------===//
 // Return Instructions
 //===----------------------------------------------------------------------===//
 
-let isTerminator = 1, isReturn = 1, isBarrier = 1, Uses = [LR] in {
+let isTerminator = 1, isReturn = 1, isBarrier = 1, Uses = [LR], SchedRW = [Write_PCU_LR] in {
   def RET : InstLEG<(outs), (ins variable_ops),
                     "bx lr",  [(LEGRetFlag)]> {
     let Inst{27-0}  = 0b0001001011111111111100011110;
@@ -236,7 +250,7 @@ let isTerminator = 1, isReturn = 1, isBarrier = 1, Uses = [LR] in {
 // Call Instructions
 //===----------------------------------------------------------------------===//
 
-let isCall = 1, Defs = [LR], Uses = [SP] in {
+let isCall = 1, Defs = [LR], Uses = [SP], SchedRW = [Write_PCU_LR, Read_PCU_SP] in {
   def BL : BranchInst<0b1011, (outs), (ins GRRegs:$addr),
                       "bl $addr",
                       [(leg_call i32:$addr)]> {
@@ -252,7 +266,7 @@ def : Pattern<(i32 (load_sym tglobaladdr:$addr)),  [(MOVi32 $addr)]>;
 // Branch Instructions
 //===----------------------------------------------------------------------===//
 
-let isTerminator = 1, isBranch = 1, isBarrier = 1 in {
+let isTerminator = 1, isBranch = 1, isBarrier = 1, SchedRW = [Write_PCU_LR, Read_PCU_Imm] in {
   def B : InstLEG<(outs), (ins b_target:$dst),
                   "b $dst", [(br bb:$dst)]> {
     bits<24> dst;
@@ -262,7 +276,7 @@ let isTerminator = 1, isBranch = 1, isBarrier = 1 in {
   }
 }
 
-let isTerminator = 1, isBranch = 1, Uses = [CPSR] in {
+let isTerminator = 1, isBranch = 1, Uses = [CPSR], SchedRW = [Write_PCU_LR, Read_PCU_Imm, Read_PCU_CPSR] in {
   def Bcc : InstLEG<(outs), (ins cc_val:$cc, b_target:$dst),
                     "b$cc $dst",  []> {
   }

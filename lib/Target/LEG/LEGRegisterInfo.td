@@ -27,13 +27,13 @@ def R5  : LEGReg< 5, "r5">;
 def SP  : LEGReg<13, "sp">;
 def LR  : LEGReg<14, "lr">;
 
+def CPSR  : LEGReg<16, "cpsr">;
+
 // Registers added on LEG2
 def R6  : LEGReg< 6, "r6">;
 def R7  : LEGReg< 7, "r7">;
 def R8  : LEGReg< 8, "r8">;
 def R9  : LEGReg< 9, "r9">;
-
-def CPSR  : LEGReg<16, "cpsr">;
 
 // Register classes.
 //

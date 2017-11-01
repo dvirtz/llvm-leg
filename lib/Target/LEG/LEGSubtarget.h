@@ -70,6 +70,7 @@ public:
   const LEGSelectionDAGInfo *getSelectionDAGInfo() const override {
     return &TSInfo;
   }
+  bool enableMachineScheduler() const override { return true; }
 
   bool isLEG1() const { return IsLEG1; }
   bool isLEG2() const { return IsLEG2; }

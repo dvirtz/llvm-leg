@@ -11,7 +11,7 @@
 // Instruction format superclass
 //===----------------------------------------------------------------------===//
 class InstLEG<dag outs, dag ins, string asmstr, list<dag> pattern>
-    : Instruction {
+    : Instruction, Sched<[]> {
   field bits<32> Inst;
 
   let Namespace = "LEG";

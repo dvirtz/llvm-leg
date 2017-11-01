@@ -21,6 +21,7 @@ include "llvm/Target/Target.td"
 // Descriptions
 //===----------------------------------------------------------------------===//
 
+include "LEGSchedule.td"
 include "LEGRegisterInfo.td"
 include "LEGInstrInfo.td"
 include "LEGCallingConv.td"
@@ -31,11 +32,11 @@ def LEGInstrInfo : InstrInfo;
 // LEG processors supported.
 //===----------------------------------------------------------------------===//
 
-class Proc<string Name, list<SubtargetFeature> Features>
-    : Processor<Name, NoItineraries, Features>;
+class Proc<string Name, SchedMachineModel Model, list<SubtargetFeature> Features>
+    : ProcessorModel<Name, Model, Features>;
 
-def : Proc<"leg1", []>;
-def : Proc<"leg2", []>;
+def : Proc<"leg1", LEG1_SchedModel, []>;
+def : Proc<"leg2", LEG2_SchedModel, []>;
 
 //===----------------------------------------------------------------------===//
 // Declare the target which we are implementing
