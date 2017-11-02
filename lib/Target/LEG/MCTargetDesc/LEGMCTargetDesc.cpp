@@ -78,8 +78,17 @@ static MCCodeGenInfo *createLEGMCCodeGenInfo(const Triple &TT, Reloc::Model RM,
 static MCInstPrinter *
 createLEGMCInstPrinter(const Triple &TT, unsigned SyntaxVariant,
                        const MCAsmInfo &MAI, const MCInstrInfo &MII,
-                       const MCRegisterInfo &MRI) {
-  return new LEGInstPrinter(MAI, MII, MRI);
+                       const MCRegisterInfo &MRI)
+{
+  switch (SyntaxVariant)
+  {
+    default: llvm_unreachable("Unsupported syntax variant");
+      return nullptr;
+    case 0:
+      return new LEG1InstPrinter(MAI, MII, MRI);
+    case 1:
+      return new LEG2InstPrinter(MAI, MII, MRI);
+  }
 }
 
 // Force static initialization.

@@ -2,11 +2,12 @@ set(LLVM_TARGET_DEFINITIONS LEG.td)
 
 tablegen(LLVM LEGGenRegisterInfo.inc -gen-register-info)
 tablegen(LLVM LEGGenInstrInfo.inc -gen-instr-info)
-tablegen(LLVM LEGGenAsmWriter.inc -gen-asm-writer)
 tablegen(LLVM LEGGenDAGISel.inc -gen-dag-isel)
 tablegen(LLVM LEGGenCallingConv.inc -gen-callingconv)
 tablegen(LLVM LEGGenSubtargetInfo.inc -gen-subtarget)
 tablegen(LLVM LEGGenMCCodeEmitter.inc -gen-emitter)
+tablegen(LLVM LEG1GenAsmWriter.inc -gen-asm-writer -asmwriternum=0)
+tablegen(LLVM LEG2GenAsmWriter.inc -gen-asm-writer -asmwriternum=1)
 add_public_tablegen_target(LEGCommonTableGen)
 
 add_llvm_target(LEGCodeGen

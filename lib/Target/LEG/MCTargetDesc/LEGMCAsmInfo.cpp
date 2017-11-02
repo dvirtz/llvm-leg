@@ -9,7 +9,16 @@
 
 #include "LEGMCAsmInfo.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/Support/CommandLine.h"
 using namespace llvm;
+
+enum class LEGAsmTypeTy { LEG1, LEG2 };
+
+static cl::opt<LEGAsmTypeTy> LEGAsmType(
+    "leg-asm-type", cl::desc("Choose style of code to emit from LEG backend:"),
+    cl::values(clEnumValN(LEGAsmTypeTy::LEG1, "leg1", "Emit LEG1 assembly"),
+               clEnumValN(LEGAsmTypeTy::LEG2, "leg2", "Emit LEG2 assembly"),
+               clEnumValEnd));
 
 void LEGMCAsmInfo::anchor() {}
 
@@ -21,10 +30,11 @@ LEGMCAsmInfo::LEGMCAsmInfo(const Triple &TT) {
   ZeroDirective = "\t.space\t";
   CommentString = "#";
 
+  AssemblerDialect = static_cast<unsigned>(LEGAsmType.getValue());
+
   AscizDirective = ".asciiz";
 
   HiddenVisibilityAttr = MCSA_Invalid;
   HiddenDeclarationVisibilityAttr = MCSA_Invalid;
   ProtectedVisibilityAttr = MCSA_Invalid;
 }
-

@@ -35,13 +35,20 @@ def LEGInstrInfo : InstrInfo;
 class Proc<string Name, SchedMachineModel Model, list<SubtargetFeature> Features>
     : ProcessorModel<Name, Model, Features>;
 
-def : Proc<"leg1", LEG1_SchedModel, []>;
-def : Proc<"leg2", LEG2_SchedModel, []>;
+foreach i = 1-2 in {
+  def : Proc<"leg"#i, !cast<SchedMachineModel>("LEG"#i#"SchedModel"), []>;
+}
 
 //===----------------------------------------------------------------------===//
 // Declare the target which we are implementing
 //===----------------------------------------------------------------------===//
+foreach i = 1-2 in {
+  let Variant = !add(i,-1), AsmWriterClassName=i#"InstPrinter" in {
+    def LEG#i#AsmWriter : AsmWriter;
+  }
+}
 
 def LEG : Target {
   let InstructionSet = LEGInstrInfo;
+  let AssemblyWriters = [LEG1AsmWriter, LEG2AsmWriter];
 }

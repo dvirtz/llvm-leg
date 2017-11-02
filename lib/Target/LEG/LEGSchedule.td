@@ -24,7 +24,7 @@ class LegLatency {
 
 // resources
 foreach i = 1-2 in {
-  def LEG#i#_SchedModel : SchedMachineModel;
+  def LEG#i#SchedModel : SchedMachineModel;
   
   let Latency = i in
     def Leg#i#Latency : LegLatency;
@@ -35,7 +35,7 @@ foreach i = 1-2 in {
     }
   }
   
-  let SchedModel = !cast<SchedMachineModel>("LEG"#i#"_SchedModel") in {
+  let SchedModel = !cast<SchedMachineModel>("LEG"#i#"SchedModel") in {
     foreach Operand = ["GR", "SP", "LR", "CPSR", "Imm", "Mem"]  in {
       foreach Unit = ["ALU", "PCU", "LS"] in {    
         let Latency = !cast<LegLatency>("Leg"#i#"Latency").Latency in  {

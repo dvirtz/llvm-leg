@@ -21,7 +21,7 @@ include "LEGOperators.td"
 multiclass BinOp<bits<4> opcode, string opstr, SDNode opnode> {
   def rr : ALUInst<opcode, (outs GRRegs:$dst),
                    (ins GRRegs:$src1, GRRegs:$src2),
-                   !strconcat(opstr, " $dst, $src1, $src2"),
+                   !strconcat(opstr, " {$dst, $src1, $src2|$src1, $src2, $dst}"),
                    [(set i32:$dst, (opnode i32:$src1, i32:$src2))]> {
     bits<4> dst;
     bits<4> src1;
@@ -36,7 +36,7 @@ multiclass BinOp<bits<4> opcode, string opstr, SDNode opnode> {
   }
   def ri : ALUInst<opcode, (outs GRRegs:$dst),
                    (ins GRRegs:$src1, i32imm:$imm),
-                   !strconcat(opstr, " $dst, $src1, $imm"),
+                   !strconcat(opstr, " {$dst, $src1, $imm|$src1, $imm, $dst}"),
                    [(set i32:$dst, (opnode i32:$src1, LEGimm8:$imm))]> {
     bits<4> dst;
     bits<4> src1;
@@ -53,7 +53,7 @@ multiclass BinOp<bits<4> opcode, string opstr, SDNode opnode> {
 multiclass ShiftOp<bits<4> opcoder, bits<3> opcodei, string opstr, SDNode opnode> {
   def rr : ALUInst<0b1101, (outs GRRegs:$dst),
                    (ins GRRegs:$src1, GRRegs:$src2),
-                   !strconcat(opstr, " $dst, $src1, $src2"),
+                   !strconcat(opstr, " {$dst, $src1, $src2|$src1, $src2, $dst}"),
                    [(set i32:$dst, (opnode i32:$src1, i32:$src2))]> {
     bits<4> dst;
     bits<4> src1;
@@ -69,7 +69,7 @@ multiclass ShiftOp<bits<4> opcoder, bits<3> opcodei, string opstr, SDNode opnode
   }
   def ri : ALUInst<0b1101, (outs GRRegs:$dst),
                    (ins GRRegs:$src1, i32imm:$imm),
-                   !strconcat(opstr, " $dst, $src1, $imm"),
+                   !strconcat(opstr, " {$dst, $src1, $imm|$src1, $imm, $dst}"),
                    [(set i32:$dst, (opnode i32:$src1, LEGimm8:$imm))]> {
     bits<4> dst;
     bits<4> src1;
@@ -101,7 +101,7 @@ defm ASR  : ShiftOp<0b0101, 0b100, "asr", sra>;
 
 def MUL  : MulInst<0b0000000, (outs GRRegs:$dst),
                    (ins GRRegs:$src1, GRRegs:$src2),
-                   "mul $dst, $src1, $src2",
+                   "mul {$dst, $src1, $src2|$src1, $src2, $dst}",
                    [(set i32:$dst, (mul i32:$src1, i32:$src2))]> {
   bits<4> dst;
   bits<4> src1;
@@ -115,7 +115,7 @@ def MUL  : MulInst<0b0000000, (outs GRRegs:$dst),
 
 def MLA  : MulInst<0b0000001, (outs GRRegs:$dst),
                    (ins GRRegs:$src1, GRRegs:$src2, GRRegs:$src3),
-                   "mla $dst, $src1, $src2, $src3",
+                   "mla {$dst, $src1, $src2, $src3|$src1, $src2, $src3, $dst}",
                    [(set i32:$dst, (add (mul i32:$src1, i32:$src2),
                                          i32:$src3))]> {
   bits<4> dst;
@@ -133,7 +133,7 @@ def MLA  : MulInst<0b0000001, (outs GRRegs:$dst),
 // Mov Instructions
 //===----------------------------------------------------------------------===//
 def MOVrr  : ALUInst<0b1101, (outs GRRegs:$dst), (ins GRRegs:$src),
-                     "mov $dst, $src",
+                     "mov {$dst, $src|$src, $dst}",
                      [/* No pattern */]> {
   bits<4> dst;
   bits<4> src;
@@ -152,7 +152,7 @@ def MOVrr  : ALUInst<0b1101, (outs GRRegs:$dst), (ins GRRegs:$src),
 
 class MOV<bits<4> opcode, string opstr, dag ins, list<dag>pattern>
     : ALUInst<opcode, (outs GRRegs:$dst), ins,
-              !strconcat(opstr, " $dst, $imm"), pattern> {
+              !strconcat(opstr, " {$dst, $imm|$imm, $dst}"), pattern> {
   bits<4> dst;
   bits<16> imm;
   let Inst{15-12} = dst;
@@ -199,7 +199,7 @@ def CMP : InstLEG<(outs), (ins GRRegs:$lhs, GRRegs:$rhs),
 //===----------------------------------------------------------------------===//
 
 def LDR  : InstLEG<(outs GRRegs:$val), (ins memsrc:$addr),
-                   "ldr $val, $addr",
+                   "ldr {$val, $addr|$addr, $val}",
                    [(set i32:$val, (load addr:$addr))]> {
   bits<4> val;
   bits<16> addr;
@@ -217,7 +217,7 @@ def LDR  : InstLEG<(outs GRRegs:$val), (ins memsrc:$addr),
 }
 
 def STR : InstLEG<(outs), (ins GRRegs:$val, memsrc:$addr),
-                  "str $val, $addr",
+                  "str {$val, $addr|$addr, $val}",
                   [(store i32:$val, addr:$addr)]> {
   bits<16> addr;
   bits<4> val;

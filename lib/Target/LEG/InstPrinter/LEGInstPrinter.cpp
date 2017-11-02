@@ -23,10 +23,11 @@
 #include "llvm/Support/raw_ostream.h"
 using namespace llvm;
 
-#include "LEGGenAsmWriter.inc"
+#include "LEG1GenAsmWriter.inc"
+#include "LEG2GenAsmWriter.inc"
 
 void LEGInstPrinter::printRegName(raw_ostream &OS, unsigned RegNo) const {
-  OS << StringRef(getRegisterName(RegNo)).lower();
+  OS << StringRef(const_cast<LEGInstPrinter*>(this)->getRegisterName(RegNo)).lower();
 }
 
 void LEGInstPrinter::printInst(const MCInst *MI, raw_ostream &O,
