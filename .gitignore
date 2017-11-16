@@ -75,3 +75,4 @@ bindings/go/llvm/workdir
 *.snm
 *.toc
 *.vrb
+/.vs
