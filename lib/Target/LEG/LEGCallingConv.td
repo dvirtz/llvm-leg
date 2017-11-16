@@ -36,4 +36,4 @@ def CC_LEG : CallingConv<[
   CCIfType<[i32], CCAssignToStack<4, 4>>
 ]>;
 
-def CC_Save : CalleeSavedRegs<(add R4, R5, R6, R7, R8, R9)>;
+def CC_Save : CalleeSavedRegs<(add R4, R8, R9)>;
